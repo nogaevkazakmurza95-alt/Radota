@@ -13,6 +13,7 @@
             --text-color: #1f2937;
             --border-color: #e5e7eb;
             --success: #10b981;
+            --danger: #ef4444;
         }
 
         body {
@@ -52,7 +53,7 @@
             margin-bottom: 6px;
         }
 
-        input, select {
+        input {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--border-color);
@@ -61,7 +62,7 @@
             box-sizing: border-box;
         }
 
-        input:focus, select:focus {
+        input:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
@@ -84,12 +85,93 @@
             background-color: var(--primary-hover);
         }
 
-        .btn-secondary {
-            background-color: #6b7280;
-            margin-top: 10px;
+        .btn-success {
+            background-color: var(--success);
+            font-size: 18px;
+            padding: 15px;
+            margin-top: 15px;
         }
-        .btn-secondary:hover {
-            background-color: #4b5563;
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
+        /* Список копилок с плюсом и минусом */
+        .piggy-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .piggy-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9fafb;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .piggy-name {
+            font-weight: 600;
+            font-size: 16px;
+            flex-grow: 1;
+        }
+
+        .counter-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .count-btn {
+            background-color: #e5e7eb;
+            color: var(--text-color);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .count-btn:hover {
+            background-color: #d1d5db;
+        }
+
+        .count-btn.minus {
+            background-color: #fee2e2;
+            color: var(--danger);
+        }
+        .count-btn.minus:hover {
+            background-color: #fecaca;
+        }
+
+        .count-btn.plus {
+            background-color: #d1fae5;
+            color: var(--success);
+        }
+        .count-btn.plus:hover {
+            background-color: #a7f3d0;
+        }
+
+        .piggy-count {
+            font-size: 18px;
+            font-weight: bold;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .add-custom-box {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
         }
 
         .stats-grid {
@@ -119,28 +201,6 @@
             font-weight: bold;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            font-weight: 600;
-            color: #4b5563;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
         .user-header {
             display: flex;
             justify-content: space-between;
@@ -160,13 +220,17 @@
         .logout-link {
             background: none;
             border: none;
-            color: #ef4444;
+            color: var(--danger);
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
         }
         .logout-link:hover {
             text-decoration: underline;
+        }
+
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -175,7 +239,7 @@
 <div class="container">
     <h1>🏺 Учет копилок</h1>
 
-    <!-- ЭКРАН 1: РЕГИСТРАЦИЯ / ВХОД -->
+    <!-- ЭКРАН 1: ВХОД -->
     <div id="loginScreen" class="card">
         <h2>Вход в личный кабинет</h2>
         <form id="loginForm">
@@ -183,76 +247,54 @@
                 <label for="usernameInput">Введите ваше имя:</label>
                 <input type="text" id="usernameInput" required placeholder="Например: Иван">
             </div>
-            <button type="submit" class="btn">Войти / Начать работу</button>
+            <button type="submit" class="btn">Войти / Начать смену</button>
         </form>
     </div>
 
-    <!-- ЭКРАН 2: ЛИЧНЫЙ КАБИНЕТ (Скрыт по умолчанию) -->
+    <!-- ЭКРАН 2: КАБИНЕТ И СЧЕТЧИКИ -->
     <div id="cabinetScreen" class="hidden">
         
-        <!-- Шапка профиля -->
         <div class="user-header">
             <div>Рабочий: <span id="currentUserName">Имя</span></div>
             <button class="logout-link" onclick="logout()">Сменить имя</button>
         </div>
 
-        <!-- Форма добавления отчета -->
-        <div class="card">
-            <h2>Сдать отчет</h2>
-            <form id="reportForm">
-                <div class="form-group">
-                    <label for="piggyBankType">Вид копилки:</label>
-                    <select id="piggyBankType" required onchange="handleTypeChange()">
-                        <!-- Заполняется автоматически из JS -->
-                    </select>
-                </div>
-
-                <!-- Поле для ввода новой копилки (если выбрали "Другие") -->
-                <div class="form-group hidden" id="otherTypeGroup">
-                    <label for="otherTypeName">Название новой копилки:</label>
-                    <input type="text" id="otherTypeName" placeholder="Например: Панда">
-                </div>
-
-                <div class="form-group">
-                    <label for="quantity">Количество (шт):</label>
-                    <input type="number" id="quantity" min="1" value="1" required>
-                </div>
-
-                <button type="submit" class="btn">Добавить в отчет (+40 ₽/шт)</button>
-            </form>
-        </div>
-
-        <!-- Статистика пользователя -->
+        <!-- Статистика -->
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>Заработано сегодня</h3>
-                <div class="value" id="dayEarnings">0 ₽</div>
+                <h3>Сумма за текущий набор</h3>
+                <div class="value" id="currentTotalSum">0 ₽</div>
             </div>
             <div class="stat-card">
-                <h3>Заработано за месяц</h3>
+                <h3>Сумма за месяц</h3>
                 <div class="value" id="monthEarnings">0 ₽</div>
             </div>
         </div>
 
-        <!-- История отчетов конкретного рабочего -->
+        <!-- Список копилок с плюсами и минусами -->
         <div class="card">
-            <h2>Ваша история сдачи</h2>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Дата / Время</th>
-                            <th>Копилка</th>
-                            <th>Шт.</th>
-                            <th>Сумма</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reportTableBody">
-                        <!-- Динамические данные -->
-                    </tbody>
-                </table>
+            <h2>Количество сделанных копилок</h2>
+            <div class="piggy-list" id="piggyListContainer">
+                <!-- Сюда динамически выводятся копилки -->
             </div>
-            <button class="btn btn-secondary" onclick="clearMyData()">Очистить мою историю</button>
+
+            <!-- Добавление новой копилки (кнопка "Другие") -->
+            <div class="add-custom-box">
+                <input type="text" id="newPiggyName" placeholder="Название новой копилки...">
+                <button type="button" class="btn" style="width: 150px;" onclick="addNewPiggyType()">Добавить</button>
+            </div>
+
+            <!-- Кнопка отправки отчета -->
+            <button type="button" class="btn btn-success" onclick="sendReport()">📤 Отправить отчет</button>
+        </div>
+
+        <!-- История отчетов -->
+        <div class="card">
+            <h2>История ваших отчетов</h2>
+            <div id="historyContainer" style="font-size: 14px; color: #4b5563;">
+                <!-- История -->
+            </div>
+            <button type="button" class="btn" style="background-color: #6b7280; margin-top: 15px;" onclick="clearHistory()">Очистить историю</button>
         </div>
     </div>
 
@@ -261,13 +303,14 @@
 <script>
     const PRICE_PER_UNIT = 40;
 
-    // Базовый список копилок по умолчанию
     const defaultTypes = [
         "Бочки", "Сундуки", "Кролики", "Зайцы", 
         "Барашки", "Миледи", "Лисы", "Шрек"
     ];
 
     let currentUser = localStorage.getItem('piggyCurrentWorker') || null;
+    // Хранит количество штук для каждой копилки в текущем отчете
+    let currentCounts = {};
 
     document.addEventListener('DOMContentLoaded', () => {
         if (currentUser) {
@@ -277,7 +320,6 @@
         }
     });
 
-    // Обработка входа
     document.getElementById('loginForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const name = document.getElementById('usernameInput').value.trim();
@@ -304,64 +346,98 @@
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('cabinetScreen').classList.remove('hidden');
         document.getElementById('currentUserName').textContent = currentUser;
-        updatePiggySelect();
+        initCounts();
+        renderPiggyList();
         updateUI();
     }
 
-    // Получить список всех доступных копилок (базовые + пользовательские)
     function getPiggyTypes() {
         let customTypes = JSON.parse(localStorage.getItem('piggyCustomTypes')) || [];
-        // Объединяем и убираем дубликаты
-        return [...new Set([...defaultTypes, ...customTypes, "Другие..."])];
+        return [...new Set([...defaultTypes, ...customTypes])];
     }
 
-    // Заполнение выпадающего списка
-    function updatePiggySelect() {
-        const select = document.getElementById('piggyBankType');
+    function initCounts() {
         const types = getPiggyTypes();
-        
-        select.innerHTML = '';
         types.forEach(type => {
-            const opt = document.createElement('option');
-            opt.value = type;
-            opt.textContent = type;
-            select.appendChild(opt);
+            if (currentCounts[type] === undefined) {
+                currentCounts[type] = 0;
+            }
         });
-        handleTypeChange();
     }
 
-    // Проверка выбора "Другие"
-    function handleTypeChange() {
-        const select = document.getElementById('piggyBankType');
-        const otherGroup = document.getElementById('otherTypeGroup');
-        if (select.value === 'Другие...') {
-            otherGroup.classList.remove('hidden');
-            document.getElementById('otherTypeName').required = true;
-        } else {
-            otherGroup.classList.add('hidden');
-            document.getElementById('otherTypeName').required = false;
+    function addNewPiggyType() {
+        const input = document.getElementById('newPiggyName');
+        const name = input.value.trim();
+        if (!name) return;
+
+        let customTypes = JSON.parse(localStorage.getItem('piggyCustomTypes')) || [];
+        if (!customTypes.includes(name) && !defaultTypes.includes(name)) {
+            customTypes.push(name);
+            localStorage.setItem('piggyCustomTypes', JSON.stringify(customTypes));
         }
+
+        currentCounts[name] = 0;
+        input.value = '';
+        renderPiggyList();
     }
 
-    // Отправка отчета
-    document.getElementById('reportForm').addEventListener('submit', (e) => {
-        e.preventDefault();
+    function changeCount(type, delta) {
+        if (!currentCounts[type]) currentCounts[type] = 0;
+        currentCounts[type] += delta;
+        if (currentCounts[type] < 0) currentCounts[type] = 0;
+        
+        renderPiggyList();
+        updateCurrentSum();
+    }
 
-        let type = document.getElementById('piggyBankType').value;
-        if (type === 'Другие...') {
-            type = document.getElementById('otherTypeName').value.trim();
-            if (type) {
-                // Сохраняем новый вид копилки в общую память, чтобы он был доступен всем
-                let customTypes = JSON.parse(localStorage.getItem('piggyCustomTypes')) || [];
-                if (!customTypes.includes(type) && !defaultTypes.includes(type)) {
-                    customTypes.push(type);
-                    localStorage.setItem('piggyCustomTypes', JSON.stringify(customTypes));
-                }
+    function renderPiggyList() {
+        const container = document.getElementById('piggyListContainer');
+        const types = getPiggyTypes();
+        container.innerHTML = '';
+
+        types.forEach(type => {
+            const count = currentCounts[type] || 0;
+            const item = document.createElement('div');
+            item.className = 'piggy-item';
+            item.innerHTML = `
+                <div class="piggy-name">${escapeHtml(type)}</div>
+                <div class="counter-controls">
+                    <button type="button" class="count-btn minus" onclick="changeCount('${type}', -1)">−</button>
+                    <div class="piggy-count">${count}</div>
+                    <button type="button" class="count-btn plus" onclick="changeCount('${type}', 1)">+</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+        updateCurrentSum();
+    }
+
+    function updateCurrentSum() {
+        let totalPieces = 0;
+        for (let type in currentCounts) {
+            totalPieces += currentCounts[type];
+        }
+        const sum = totalPieces * PRICE_PER_UNIT;
+        document.getElementById('currentTotalSum').textContent = sum + ' ₽';
+    }
+
+    function sendReport() {
+        let reportDetails = [];
+        let totalPieces = 0;
+
+        for (let type in currentCounts) {
+            if (currentCounts[type] > 0) {
+                reportDetails.push({ type: type, quantity: currentCounts[type] });
+                totalPieces += currentCounts[type];
             }
         }
 
-        const quantity = parseInt(document.getElementById('quantity').value);
-        const sum = quantity * PRICE_PER_UNIT;
+        if (totalPieces === 0) {
+            alert('Вы ничего не выбрали! Укажите количество хотя бы для одной копилки.');
+            return;
+        }
+
+        const sum = totalPieces * PRICE_PER_UNIT;
         const now = new Date();
 
         const report = {
@@ -370,59 +446,65 @@
             dayKey: now.toDateString(),
             monthKey: now.getFullYear() + '-' + now.getMonth(),
             worker: currentUser,
-            type: type,
-            quantity: quantity,
-            sum: sum
+            items: reportDetails,
+            totalSum: sum
         };
 
         let allReports = JSON.parse(localStorage.getItem('piggyAllReports')) || [];
         allReports.unshift(report);
         localStorage.setItem('piggyAllReports', JSON.stringify(allReports));
 
-        // Сброс полей
-        document.getElementById('quantity').value = '1';
-        document.getElementById('otherTypeName').value = '';
-        
-        updatePiggySelect();
-        updateUI();
-    });
+        // Формируем текст для отправки
+        let text = `📋 *ОТЧЕТ ПО КОПИЛКАМ*\n`;
+        text += `👤 Рабочий: ${currentUser}\n`;
+        text += `📅 Дата: ${report.date}\n\n`;
+        report.items.forEach(i => {
+            text += `• ${i.type}: ${i.quantity} шт.\n`;
+        });
+        text += `\n💰 Итого: *${sum} ₽*`;
 
-    // Обновление интерфейса и статистики текущего пользователя
+        // Сбрасываем счетчики
+        for (let type in currentCounts) {
+            currentCounts[type] = 0;
+        }
+        renderPiggyList();
+        updateUI();
+
+        // Пробуем скопировать текст в буфер обмена и показать успешное сообщение
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Отчет успешно отправлен и сохранен!\n\nТекст отчета скопирован в буфер обмена, вы можете вставить его в чат (WhatsApp/Telegram).');
+        }).catch(() => {
+            alert('Отчет успешно сохранен!');
+        });
+    }
+
     function updateUI() {
         const allReports = JSON.parse(localStorage.getItem('piggyAllReports')) || [];
-        const tbody = document.getElementById('reportTableBody');
-        tbody.innerHTML = '';
+        const historyContainer = document.getElementById('historyContainer');
+        historyContainer.innerHTML = '';
 
-        let dayEarnings = 0;
         let monthEarnings = 0;
-        const todayStr = new Date().toDateString();
         const currentMonthKey = new Date().getFullYear() + '-' + new Date().getMonth();
 
-        // Фильтруем отчеты только для текущего рабочего
         const myReports = allReports.filter(rep => rep.worker === currentUser);
 
         myReports.forEach(rep => {
-            if (rep.dayKey === todayStr) dayEarnings += rep.sum;
-            if (rep.monthKey === currentMonthKey) monthEarnings += rep.sum;
+            if (rep.monthKey === currentMonthKey) monthEarnings += rep.totalSum;
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${rep.date}</td>
-                <td>${escapeHtml(rep.type)}</td>
-                <td>${rep.quantity}</td>
-                <td><b>${rep.sum} ₽</b></td>
-            `;
-            tbody.appendChild(tr);
+            let itemsText = rep.items.map(i => `${i.type} (${i.quantity} шт.)`).join(', ');
+            
+            const div = document.createElement('div');
+            div.style.cssText = "background: #f9fafb; padding: 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #e5e7eb;";
+            div.innerHTML = `<b>${rep.date}</b> — ${itemsText} — <b style="color: #4f46e5;">${rep.totalSum} ₽</b>`;
+            historyContainer.appendChild(div);
         });
 
-        document.getElementById('dayEarnings').textContent = dayEarnings + ' ₽';
         document.getElementById('monthEarnings').textContent = monthEarnings + ' ₽';
     }
 
-    function clearMyData() {
+    function clearHistory() {
         if (confirm('Очистить историю ваших отчетов?')) {
             let allReports = JSON.parse(localStorage.getItem('piggyAllReports')) || [];
-            // Оставляем отчеты только других пользователей
             allReports = allReports.filter(rep => rep.worker !== currentUser);
             localStorage.setItem('piggyAllReports', JSON.stringify(allReports));
             updateUI();
