@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчет по изготовлению копилок</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .clear-btn {
+            background-color: #ef4444;
+            margin-top: 10px;
+        }
+        .clear-btn:hover {
+            background-color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏺 Учет изготовления копилок</h1>
+
+    <!-- Форма отчета -->
+    <div class="card">
+        <form id="reportForm">
+            <div class="form-group">
+                <label for="workerName">Ваше имя:</label>
+                <input type="text" id="workerName" required placeholder="Например: Иван">
+            </div>
+
+            <div class="form-group">
+                <label for="piggyBankType">Вид копилки:</label>
+                <select id="piggyBankType" required onchange="checkOtherType()">
+                    <option value="Бочки">Бочки</option>
+                    <option value="Сундуки">Сундуки</option>
+                    <option value="Кролики">Кролики</option>
+                    <option value="Зайцы">Зайцы</option>
+                    <option value="Барашки">Барашки</option>
+                    <option value="Миледи">Миледи</option>
+                    <option value="Лисы">Лисы</option>
+                    <option value="Шрек">Шрек</option>
+                    <option value="Другие">Другие...</option>
+                </select>
+            </div>
+
+            <div class="form-group hidden" id="otherTypeGroup">
+                <label for="otherTypeName">Введите название копилки:</label>
+                <input type="text" id="otherTypeName" placeholder="Например: Панда">
+            </div>
+
+            <div class="form-group">
+                <label for="quantity">Количество штук:</label>
+                <input type="number" id="quantity" min="1" value="1" required>
+            </div>
+
+            <button type="submit" class="btn">Отправить отчет</button>
+        </form>
+    </div>
+
+    <!-- Блок статистики -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Заработано за день</h3>
+            <div class="value" id="dayEarnings">0 ₽</div>
+        </div>
+        <div class="stat-card">
+            <h3>Заработано за месяц</h3>
+            <div class="value" id="monthEarnings">0 ₽</div>
+        </div>
+    </div>
+
+    <!-- История отчетов -->
+    <div class="card">
+        <h3>История отчетов</h3>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата/Время</th>
+                        <th>Имя</th>
+                        <th>Копилка</th>
+                        <th>Шт.</th>
+                        <th>Сумма</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody">
+                    <!-- Данные добавляются динамически -->
+                </tbody>
+            </table>
+        </div>
+        <button class="btn clear-btn" onclick="clearData()">Очистить всю историю</button>
+    </div>
+</div>
+
+<script>
+    const PRICE_PER_UNIT = 40; // 40 рублей за 1 копилку
+
+    // Загрузка данных из localStorage при открытии
+    document.addEventListener('DOMContentLoaded', updateUI);
+
+    function checkOtherType() {
+        const select = document.getElementById('piggyBankType');
+        const otherGroup = document.getElementById('otherTypeGroup');
+        if (select.value === 'Другие') {
+            otherGroup.classList.remove('hidden');
+            document.getElementById('otherTypeName').required = true;
+        } else {
+            otherGroup.classList.add('hidden');
+            document.getElementById('otherTypeName').required = false;
+        }
+    }
+
+    document.getElementById('reportForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('workerName').value.trim();
+        let type = document.getElementById('piggyBankType').value;
+        if (type === 'Другие') {
+            type = document.getElementById('otherTypeName').value.trim();
+        }
+        const quantity = parseInt(document.getElementById('quantity').value);
+        const sum = quantity * PRICE_PER_UNIT;
+        const now = new Date();
+
+        const report = {
+            id: Date.now(),
+            date: now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+            timestamp: now.getTime(),
+            monthKey: now.getFullYear() + '-' + now.getMonth(),
+            dayKey: now.toDateString(),
+            name: name,
+            type: type,
+            quantity: quantity,
+            sum: sum
+        };
+
+        let reports = JSON.parse(localStorage.getItem('piggyReports')) || [];
+        reports.unshift(report); // Добавляем в начало
+        localStorage.setItem('piggyReports', JSON.stringify(reports));
+
+        // Сброс формы (имя можно оставить, чтобы не вводить заново, но по желанию можно очищать)
+        document.getElementById('quantity').value = '1';
+        if(document.getElementById('piggyBankType').value === 'Другие') {
+            document.getElementById('otherTypeName').value = '';
+        }
+
+        updateUI();
+    });
+
+    function updateUI() {
+        const reports = JSON.parse(localStorage.getItem('piggyReports')) || [];
+        const tbody = document.getElementById('reportTableBody');
+        tbody.innerHTML = '';
+
+        let dayEarnings = 0;
+        let monthEarnings = 0;
+        const todayStr = new Date().toDateString();
+        const currentMonthKey = new Date().getFullYear() + '-' + new Date().getMonth();
+
+        reports.forEach(rep => {
+            // Суммы за день и месяц
+            if (rep.dayKey === todayStr) {
+                dayEarnings += rep.sum;
+            }
+            if (rep.monthKey === currentMonthKey) {
+                monthEarnings += rep.sum;
+            }
+
+            // Добавление строки в таблицу
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${rep.date}</td>
+                <td>${escapeHtml(rep.name)}</td>
+                <td>${escapeHtml(rep.type)}</td>
+                <td>${rep.quantity}</td>
+                <td><b>${rep.sum} ₽</b></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('dayEarnings').textContent = dayEarnings + ' ₽';
+        document.getElementById('monthEarnings').textContent = monthEarnings + ' ₽';
+    }
+
+    function clearData() {
+        if (confirm('Вы уверены, что хотите удалить всю историю отчетов?')) {
+            localStorage.removeItem('piggyReports');
+            updateUI();
+        }
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+</script>
+
+</body>
+</html>
